@@ -190,7 +190,7 @@ const Index = () => {
   const getAlerts = async (id) => {
     try {
       const { data, status } = await axios.get(
-        `http://localhost:8888/api/alerts?deviceMac=${id}`
+        `http://localhost:3001/api/alerts/getAlerts?deviceMac=${id}`
       );
       if (status === 200 || status === 201) {
         setAlertData(data);
@@ -212,7 +212,7 @@ const Index = () => {
   const handleSerialData = async (data) => {
     try {
       const response = await axios.get(
-        `http://localhost:8888/api/settings?device_id=${data?.device_id}`
+        `http://localhost:3001/api/settings/getSettings?device_id=${data?.device_id}`
       );
       setDeviceMac(data?.device_id);
       const setting = response?.data;
@@ -258,7 +258,10 @@ const Index = () => {
       // Send alerts
       if (alerts.length > 0) {
         for (const alert of alerts) {
-          await axios?.post(`http://localhost:8888/api/alerts`, alert);
+          await axios?.post(
+            `http://localhost:3001/api/alerts/createAlerts`,
+            alert
+          );
           await getAlerts(alert?.deviceMac);
         }
       }
@@ -465,7 +468,7 @@ const Index = () => {
         defaultHumidityThreshold: parseInt(data1?.defaultHumidityThreshold),
       };
       const { data, status } = await axios.post(
-        `http://localhost:8888/api/settings`,
+        `http://localhost:3001/api/settings/PostSettings`,
         body
       );
       if (status === 201) {
@@ -487,7 +490,7 @@ const Index = () => {
     setAlertloading(true);
     try {
       const { data, status } = await axios.get(
-        `http://localhost:8888/api/history?deviceMac=${deviceMac}`
+        `http://localhost:3001/api/history/getHistory?deviceMac=${deviceMac}`
       );
       if (status === 200) {
         setAlertHistory([...data, alertData]);
@@ -501,7 +504,7 @@ const Index = () => {
   const AutoDelete = async (deviceMac) => {
     try {
       const { data, status } = axios.delete(
-        `http://localhost:8888/api/history?deviceMac=${deviceMac}`
+        `http://localhost:3001/api/history/deleteHistory?deviceMac=${deviceMac}`
       );
       if (status === 200) {
         toast.success(data?.msg);
@@ -600,7 +603,7 @@ const Index = () => {
         container
         p={2}
         mt={11}
-        sx={{mt:{xs:23,sm:19,md:11}}}
+        sx={{ mt: { xs: 23, sm: 19, md: 11 } }}
         alignItems="center"
         justifyContent={"space-between"}
       >

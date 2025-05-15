@@ -1,16 +1,19 @@
-import dbConnect from "../../lib/dbConnect";
-import Setting from "../../modals/Settings";
+import Setting from "../modals/Settings";
 
-export default async function handler(req, res) {
-  await dbConnect();
-
-  if (req.method === "GET") {
+const fetchSettings = async (req, res) => {
+  try {
     const { device_id } = req.query;
     const settings = await Setting.findOne({ device_id }).sort({ _id: -1 });
     return res.status(200).json(settings);
+  } catch (error) {
+    console.error("Error saving settings:", error);
+    return res
+      .status(500)
+      .json({ error: "Internal server error", details: error.message });
   }
-
-  if (req.method === "POST") {
+};
+const PostSettings = async (req, res) => {
+  try {
     const {
       defaultTempThreshold,
       defaultHumidityThreshold,
@@ -29,7 +32,9 @@ export default async function handler(req, res) {
     return res.status(201).json({
       msg: "Default data set successfully!",
     });
+  } catch ({ error }) {
+    console.error("Error creating settings:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
-
-  res.status(405).json({ error: "Method not allowed" });
-}
+};
+export { PostSettings, fetchSettings };

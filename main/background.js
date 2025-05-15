@@ -4,12 +4,44 @@ import serve from "electron-serve";
 import { createWindow } from "./helpers";
 import { SerialPort } from "serialport";
 import { usb } from "usb"; // Import the 'usb' library
+import express from "express";
+import bodyParser from "body-parser";
+import mongoose from "mongoose";
+import cors from "cors";
+import routerGlobal from "./routes/index";
 
 const isProd = process.env.NODE_ENV === "production";
 let port;
 let mainWindow;
 let buffer = "";
+const apiPort = 3001;
+let apiServer = null;
 
+// Database connection function
+async function connectToDatabase() {
+  try {
+    await mongoose.connect("mongodb://localhost:27017/");
+    console.log("Connected to MongoDB");
+  } catch (error) {
+    console.error("MongoDB connection error:", error);
+  }
+}
+
+// Create API server function
+function createAPIServer() {
+  const app = express();
+
+  // Middleware
+  app.use(cors());
+  app.use(bodyParser.json());
+
+  app.use("/api", routerGlobal);
+
+  // Start the server
+  apiServer = app.listen(apiPort, () => {
+    console.log(`API server running on http://localhost:${apiPort}`);
+  });
+}
 if (isProd) {
   serve({ directory: "app" });
 } else {
@@ -43,6 +75,10 @@ const showNotification = (title, body, type = "info", onClick = null) => {
 
 (async () => {
   await app.whenReady();
+  await connectToDatabase();
+
+  // Create API server
+  createAPIServer();
   mainWindow = createWindow("main", {
     width: 1500,
     height: 800,
